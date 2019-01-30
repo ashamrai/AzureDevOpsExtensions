@@ -1,0 +1,64 @@
+{
+    "id": "c6ff84bf-0260-47d6-889d-6c2ecbbe2aa5",
+    "name": "CreateWorkItemCustomTask",
+    "friendlyName": "Create New Work Item Custom Task",
+    "description": "Create a new work item and link it to a new build or release",
+    "helpMarkDown": "",
+    "category": "Utility",
+    "author": "Aleksandr Shamrai",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 31
+    },
+    "instanceNameFormat": "New Work Item $(woritemtype) $(titletemplate)",
+    "inputs": [
+        {
+            "name": "woritemtype",
+            "type": "pickList",
+            "label": "Worm Item Type",
+            "defaultValue": "Task",
+            "required": true,
+            "helpMarkDown": "Select the type for new work item",
+            "options": {
+                "Task": "Task",           
+                "Bug": "Bug"                           
+              }
+        },
+        {
+            "name": "titletemplate",
+            "type": "string",
+            "label": "Title Template",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "A title template"
+        },        
+        {
+            "name": "assignedto",
+            "type": "string",
+            "label": "Assigne to",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Set an owner of a work item"
+        },
+        {
+            "name": "linktobuild",
+            "type": "radio",
+            "label": "Link New Work Item to Build",
+            "defaultValue": "No",
+            "required": true,
+            "helpMarkDown": "Link a new work item to build",
+            "options": {
+                "No": "No",           
+                "LinkAsArtifact": "Link as artifact (only for builds)",                           
+                "LinkAsWebUrl": "Link as Web Url"
+              }
+        }
+        
+    ],
+    "execution": {
+        "Node": {
+            "target": "index.js"
+        }
+    }
+}

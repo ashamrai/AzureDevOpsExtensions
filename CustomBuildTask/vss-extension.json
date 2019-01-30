@@ -1,0 +1,36 @@
+{
+    "manifestVersion": 1,
+    "id": "new-work-item-custom-task",
+    "name": "Create New Work Item Custom Task",
+    "version": "0.1.31",
+    "publisher": "AShamrai",
+    "targets": [
+        {
+            "id": "Microsoft.TeamFoundation.Server"
+        }
+    ],    
+    "description": "Create a new work item and link it a build",
+    "categories": [
+        "Build and release"
+    ],
+    "icons": {
+        "default": "images/newworkitem.png"        
+    },
+    "files": [
+        {
+            "path": "NewWICustomTask"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "mew-work-tem-custom-build-release-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "NewWICustomTask"
+            }
+        }
+    ]
+}
