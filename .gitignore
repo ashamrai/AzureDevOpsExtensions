@@ -1,3 +1,4 @@
 ﻿/CustomBuildTask/NewWICustomTask/node_modules
 
 /.vs
+*.vsix
