@@ -9,7 +9,12 @@
             "id": "Microsoft.TeamFoundation.Server"
         }
     ],    
-    "description": "Create a new work item and link it a build",
+    "description": "Create a new work item and link it a build or release",
+    "content": {
+        "details": {
+            "path": "details.md"
+        }
+    },
     "categories": [
         "Build and release"
     ],
