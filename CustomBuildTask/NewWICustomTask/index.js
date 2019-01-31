@@ -14,7 +14,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             //get inputs
-            const inputWIType = tl.getInput('woritemtype', true);
+            const inputWIType = tl.getInput('workitemtype', true);
             const inputTitle = tl.getInput('titletemplate', false);
             const inputAssignedTo = tl.getInput('assignedto', false);
             const inputLinkToBuild = tl.getInput('linktobuild', true);
