@@ -4,10 +4,10 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 async function run() {
     try {
         //get inputs
-        const inputWIType: string = tl.getInput('woritemtype', true);
+        const inputWIType: string = tl.getInput('workitemtype', true);
         const inputTitle: string = tl.getInput('titletemplate', false);
         const inputAssignedTo: string = tl.getInput('assignedto', false);
-        const inputLinkToBuild: string = tl.getInput('linktobuild', true);
+        const inputLinkToBuild: string = tl.getInput('linktobuild', true);        
         
         //get variables
         const strAC = tl.getVariable('System.AccessToken');   

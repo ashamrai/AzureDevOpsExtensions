@@ -9,12 +9,12 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 31
+        "Patch": 32
     },
-    "instanceNameFormat": "New Work Item $(woritemtype) $(titletemplate)",
+    "instanceNameFormat": "New Work Item $(workitemtype) $(titletemplate)",
     "inputs": [
         {
-            "name": "woritemtype",
+            "name": "workitemtype",
             "type": "pickList",
             "label": "Worm Item Type",
             "defaultValue": "Task",
