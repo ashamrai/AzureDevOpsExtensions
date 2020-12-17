@@ -1,6 +1,6 @@
 $user = ""
 #$token = $env:SYSTEM_ACCESSTOKEN #use this in a build pieline
-$token = "<PAT>"
+$token = "<PAT>" #https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=preview-page
 
 $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $user,$token)))
 #$orgUrl = $env:SYSTEM_COLLECTIONURI #use this in a build pieline
@@ -161,7 +161,7 @@ function RemoveBranches
         $cmturl =  $restApiGetCommit.Replace("{commitId}", $branch.objectId)
         $cmt = InvokeGetRequest $cmturl
            
-        Write-Host "$i BRANCH" $branch.name $cmt.committer.date $cmt.committer.name
+        Write-Host "BRANCH" $branch.name $cmt.committer.date $cmt.committer.name
         $branchDate = [DateTime] $cmt.committer.date
 
         #Process a branch to the resulting list if the last commit date in our scope
