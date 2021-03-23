@@ -16,7 +16,7 @@ function InvokeGetRequest ($GetUrl)
 
 $resCommit = InvokeGetRequest $restApiGetCommit
 
-$commitArray = $resCommit.comment -split '\n'
+$commitArray = $resCommit.comment -split "`n"
 
 if (-not [string]::IsNullOrEmpty($commitArray[0]))
 {
