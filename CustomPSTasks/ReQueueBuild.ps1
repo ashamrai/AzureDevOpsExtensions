@@ -1,4 +1,4 @@
-$token = "$(System.AccessToken)" #https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=preview-page
+$token = "$(System.AccessToken)" 
 
 $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $user,$token)))
 $orgUrl = "$(System.CollectionUri)"
@@ -15,9 +15,9 @@ function InvokeGetRequest ($GetUrl)
     return Invoke-RestMethod -Uri $GetUrl -Method Get -ContentType "application/json" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)}    
 }
 
-function InvokePostRequest ($GetUrl, $body)
+function InvokePostRequest ($PostUrl)
 {    
-    return Invoke-RestMethod -Uri $GetUrl -Method Post -ContentType "application/json" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} #-Body $body
+    return Invoke-RestMethod -Uri $PostUrl -Method Post -ContentType "application/json" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)}
 }
 
 $restGetBuildLogs
@@ -36,7 +36,7 @@ foreach ($buildLog in $buildLogs.value)
 
         $restReRunBuild
 
-        $result = InvokePostRequest $restReRunBuild ""
+        $result = InvokePostRequest $restReRunBuild
 
         $result
     }
