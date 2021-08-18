@@ -24,11 +24,13 @@ $restGetBuildLogs
 
 $buildLogs = InvokeGetRequest $restGetBuildLogs
 
+$searchPhrase = "The operation could not continue because the target database was modified after schema comparison was completed"
+
 foreach ($buildLog in $buildLogs.value)
 {
     $buildRes = InvokeGetRequest $buildLog.url    
 
-    if ($buildRes.Contains("The operation could not continue because the target database was modified after schema comparison was completed"))
+    if ($buildRes.Contains($searchPhrase))
     {
         Write-Host "Needs to restart"
 
