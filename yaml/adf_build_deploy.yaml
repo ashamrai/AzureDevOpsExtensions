@@ -1,0 +1,109 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- master
+
+variables:
+  armFolder: ArmTemplate
+  qaGlobalParams: <QA_GLOBAL_PARAMETERS>.json 
+
+stages:
+- stage: Build_ADF_Package
+  jobs: 
+  - job: Build
+    variables:
+      azSubscriptionId: <AZURE_SUBSCRIPTION_ID_DEV>
+      azResGroupName: <AZURE_RESOURCE_GROUP_NAME_DEV>
+      adfName: <ADF_NAME_DEV>
+    pool:
+      name: Azure Pipelines
+      demands: npm
+
+    steps:
+    - task: Npm@1
+      displayName: 'npm install'
+      inputs:
+        workingDir: '$(Build.SourcesDirectory)'
+        verbose: false
+
+    - task: Npm@1
+      displayName: 'npm validate'
+      inputs:
+       command: custom
+       workingDir: '$(Build.SourcesDirectory)'
+       verbose: false
+       customCommand: 'run build validate $(Build.SourcesDirectory) /subscriptions/$(azSubscriptionId)/resourceGroups/$(azResGroupName)/providers/Microsoft.DataFactory/factories/$(adfName)'
+
+    - task: Npm@1
+      displayName: 'npm validate and generate ARM template'
+      inputs:
+        command: custom
+        workingDir: '$(Build.SourcesDirectory)'
+        verbose: false
+        customCommand: 'run build export $(Build.SourcesDirectory) /subscriptions/$(azSubscriptionId)/resourceGroups/$(azResGroupName)/providers/Microsoft.DataFactory/factories/$(adfName) "$(armFolder)"'
+
+    - task: CopyFiles@2
+      displayName: 'Copy Files to: $(Build.SourcesDirectory)/$(armFolder)/globalParameters'
+      inputs:
+        SourceFolder: GlobalParameters
+        Contents: |
+         $(qaGlobalParams)
+        TargetFolder: '$(Build.SourcesDirectory)/$(armFolder)/globalParameters'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Pipeline Artifact'
+      inputs:
+        targetPath: '$(Build.SourcesDirectory)/$(armFolder)'
+        artifact: $(armFolder)
+
+- stage: Deploy_ADF_Package_QA  
+  jobs:
+  - deployment: QA_Deployment
+    variables:
+      azResGroupName: <AZURE_RESOURCE_GROUP_NAME_QA>
+      adfName: <ADF_NAME_QA>
+    pool:
+     name: Azure Pipelines
+     vmImage: 'windows-latest'
+    environment: 'QA'
+    strategy:
+     runOnce:
+      deploy:          
+        steps:
+        - task: AzurePowerShell@5
+          displayName: 'Azure PowerShell script: Stop Triggers'
+          inputs:
+            azureSubscription: '<AZURE_SUBSCRIPTION_SERVICE_CONNECTION_QA>'
+            ScriptPath: '$(Agent.BuildDirectory)/$(armFolder)/PrePostDeploymentScript.ps1'
+            ScriptArguments: '-armTemplate "$(Agent.BuildDirectory)/$(armFolder)/ARMTemplateForFactory.json" -ResourceGroupName $(azResGroupName) -DataFactoryName $(adfName) -predeployment $true -deleteDeployment $false'
+            azurePowerShellVersion: LatestVersion
+
+        - task: AzureResourceManagerTemplateDeployment@3
+          displayName: 'ARM Template deployment: Resource Group scope'
+          inputs:
+            azureResourceManagerConnection: '<AZURE_SUBSCRIPTION_SERVICE_CONNECTION_QA>'
+            subscriptionId: '<AZURE_SUBSCRIPTION_ID_QA>'
+            resourceGroupName: '$(azResGroupName)'
+            location: 'West Europe'
+            csmFile: '$(Agent.BuildDirectory)/$(armFolder)/ARMTemplateForFactory.json'
+            csmParametersFile: '$(Agent.BuildDirectory)/$(armFolder)/ARMTemplateParametersForFactory.json'
+            overrideParameters: '-factoryName "$(adfName)"'
+        
+        - task: AzurePowerShell@5
+          displayName: 'Azure PowerShell script: Update Global Parameters'
+          inputs:
+            azureSubscription: '<AZURE_SUBSCRIPTION_SERVICE_CONNECTION_QA>'
+            ScriptPath: '$(Agent.BuildDirectory)/$(armFolder)/GlobalParametersUpdateScript.ps1'
+            ScriptArguments: '-globalParametersFilePath "$(Agent.BuildDirectory)/$(armFolder)/globalParameters/$(qaGlobalParams)" -resourceGroupName "$(azResGroupName)" -dataFactoryName "$(adfName)"'
+            azurePowerShellVersion: LatestVersion
+            
+        - task: AzurePowerShell@5
+          displayName: 'Azure PowerShell script: Start Triggers'
+          inputs:
+            azureSubscription: '<AZURE_SUBSCRIPTION_SERVICE_CONNECTION_QA>'
+            ScriptPath: '$(Agent.BuildDirectory)/$(armFolder)/PrePostDeploymentScript.ps1'
+            ScriptArguments: '-armTemplate "$(Agent.BuildDirectory)/$(armFolder)/ARMTemplateForFactory.json" -ResourceGroupName $(azResGroupName) -DataFactoryName $(adfName) -predeployment $false -deleteDeployment $false'
+            azurePowerShellVersion: LatestVersion
