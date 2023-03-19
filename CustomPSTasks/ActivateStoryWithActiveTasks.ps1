@@ -5,7 +5,7 @@ $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0
 $orgUrl = $env:SYSTEM_COLLECTIONURI
 $teamProject = "$env:SYSTEM_TEAMPROJECT"
 
-$wiqlGetNewStories = "SELECT [System.Id] FROM WorkItemLinks WHERE ([Source].[System.TeamProject] = '$teamProject' AND [Source].[System.WorkItemType] = 'User story' AND [Source].[System.State] = 'New' AND [Source].[System.AreaPath] Under 'BEES - Europe\\Europe - BEES Customer') And ([System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward') And ([Target].[System.WorkItemType] = 'Task' AND [Target].[System.State] = 'Active') ORDER BY [System.Id] mode(MustContain)"
+$wiqlGetNewStories = "SELECT [System.Id] FROM WorkItemLinks WHERE ([Source].[System.TeamProject] = '$teamProject' AND [Source].[System.WorkItemType] = 'User story' AND [Source].[System.State] = 'New') And ([System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward') And ([Target].[System.WorkItemType] = 'Task' AND [Target].[System.State] = 'Active') ORDER BY [System.Id] mode(MustContain)"
 
 $updateState = "[{`"op`": `"add`", `"path`": `"/fields/System.State`", `"value`": `"{new_state}`"}]"
 
