@@ -5,7 +5,7 @@ $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0
 $orgUrl = $env:SYSTEM_COLLECTIONURI
 $teamProject = "$env:SYSTEM_TEAMPROJECT"
 
-$wiqlGetActiveStories = "SELECT [System.Id] FROM WorkItemLinks WHERE ([Source].[System.TeamProject] = '$teamProject' AND [Source].[System.WorkItemType] = 'User story' AND [Source].[System.State] = 'Active' AND [Source].[System.AreaPath] Under 'BEES - Europe\\Europe - BEES Customer') And ([System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward') And ([Target].[System.WorkItemType] = 'Task' AND [Target].[System.State] = 'Closed') ORDER BY [System.Id] mode(MustContain)"
+$wiqlGetActiveStories = "SELECT [System.Id] FROM WorkItemLinks WHERE ([Source].[System.TeamProject] = '$teamProject' AND [Source].[System.WorkItemType] = 'User story' AND [Source].[System.State] = 'Active') And ([System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward') And ([Target].[System.WorkItemType] = 'Task' AND [Target].[System.State] = 'Closed') ORDER BY [System.Id] mode(MustContain)"
 $wiqlStoryClosedTasks = "SELECT[System.Id] FROM WorkItemLinks WHERE([Source].[System.TeamProject] = '$teamProject' AND [Source].[System.Id] = {Parent_ID}) And([System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward') And ([Target].[System.WorkItemType] = 'Task' AND ([Target].[System.State] = 'Closed' OR [Target].[System.State] = 'Removed')) ORDER BY [System.Id] mode(MustContain)"
 $wiqlStoryAllTasks = "SELECT[System.Id] FROM WorkItemLinks WHERE([Source].[System.TeamProject] = '$teamProject' AND [Source].[System.Id] = {Parent_ID}) And ([System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward') And ([Target].[System.WorkItemType] = 'Task') ORDER BY [System.Id] mode(MustContain)"
 
