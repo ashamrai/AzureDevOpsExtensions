@@ -4,7 +4,7 @@ $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0
 $orgUrl = "$(System.CollectionUri)"
 $teamProject = "$(System.TeamProject)"
 
-$buildDefId = 'TARGET_BUILD_ID'
+$buildDefId = 'TARGET_BUILDDEF_ID'
 
 $restRunBuild = "$orgUrl/$teamProject/_apis/build/builds?api-version=7.1-preview.7"
 
