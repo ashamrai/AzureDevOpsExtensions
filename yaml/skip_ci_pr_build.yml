@@ -1,0 +1,23 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $user = ""
+      $token = "$(System.AccessToken)"
+      $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $user,$token)))
+      $uri = "$(System.TeamFoundationCollectionUri)/$(System.TeamProject)/_apis/build/builds/$(Build.BuildId)?api-version=5.1"
+      $json = @{status="Cancelling"} | ConvertTo-Json -Compress
+      $build = Invoke-RestMethod -Uri $uri -Method Patch -Headers @{Authorization = "Basic $base64AuthInfo"} -ContentType "application/json" -Body $json
+
+      Start-Sleep -Seconds 10
+    pwsh: true
+  env:
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+  condition: contains(variables['Build.SourceVersionMessage'], '[skip ci]')
