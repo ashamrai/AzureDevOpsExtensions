@@ -15,3 +15,5 @@ function InvokeDownloadRequest ($GetUrl, $filepath)
 {   
     return Invoke-RestMethod -Uri $GetUrl -Method Get -ContentType "application/json" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -OutFile $filepath
 }
+
+InvokeDownloadRequest $fileurl $localfilepath
