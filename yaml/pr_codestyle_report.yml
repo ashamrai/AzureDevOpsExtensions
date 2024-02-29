@@ -1,0 +1,115 @@
+pool:
+  name: Azure Pipelines
+
+steps:
+- task: JavaToolInstaller@0
+  displayName: 'Use Java 17'
+  inputs:
+    versionSpec: 17
+    jdkArchitectureOption: x64
+    jdkSourceOption: PreInstalled
+
+- script: |
+   curl -L https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.5/checkstyle-10.12.5-all.jar --output checkstyle-10.12.5-all.jar
+   
+  displayName: 'Download checkstyle'
+
+- script: |
+   curl https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml --output google_checks.xml
+   dir
+  displayName: 'Download checkstyle config'
+
+- powershell: |
+   $user = ""
+   $token = '$(System.AccessToken)'
+   
+   $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $user,$token)))
+   $orgUrl = "$(System.CollectionUri)"
+   $teamProject = "$(System.TeamProject)"
+   $repoName = "$(Build.Repository.Name)"
+   $prId = "$(System.PullRequest.PullRequestId)"
+   $reportFileName = "CodeReport-$(get-date -f yyyy-MM-dd-HH-mm).txt"
+   
+   $bodyCommentTemplate = @"
+   {
+     "comments": [
+       {
+         "parentCommentId": 0,
+         "content": "There are code style warnings [LINK_NAME](LINK_REF)",
+         "commentType": 1
+       }
+     ],
+     "status": 1
+   }
+   "@
+   
+   $restAddAttachment = "$orgUrl/$teamProject/_apis/git/repositories/$repoName/pullRequests/$prId/attachments/$reportFileName`?api-version=7.1-preview.1"
+   $restAddComment = "$orgUrl/$teamProject/_apis/git/repositories/$repoName/pullRequests/$prId/threads?api-version=7.1-preview.1"
+   
+   function InvokePostFileRequest ($PostUrl, $FilePath)
+   {    
+       return Invoke-RestMethod -Uri $PostUrl -Method Post -ContentType "application/octet-stream" -InFile $FilePath -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)}
+   }
+   
+   function InvokePostRequest ($PostUrl, $PostBody)
+   {    
+       return Invoke-RestMethod -Uri $PostUrl -Method Post -ContentType "application/json" -Body $PostBody -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)}
+   }
+   
+   
+   $buildreason = "$(Build.Reason)"
+   
+   if ($buildreason -eq "PullRequest")
+   {
+       $targetBranch = "$(system.pullRequest.targetBranch)" -replace "refs/heads/", "origin/"
+       $changes = git diff --name-only --relative --diff-filter AMR $targetBranch .
+       Write-Host "git diff --name-only --relative --diff-filter AMR $targetBranch ."    
+   }
+   
+   $report_content = ""
+   
+   if ($changes.Count -gt 0)
+   {
+       foreach($change in $changes)
+       {
+           if($change.EndsWith(".java") -and -not $change.EndsWith("Test.java")){ 
+               Write-Host $change
+               $results = java -jar checkstyle-10.12.5-all.jar -c google_checks.xml $change
+               
+               $report_for_file = $false
+               
+               foreach($result in $results){
+                   if ($report_for_file -eq $false){
+                       $report_content += "File: " + $change + "`n"
+                       $report_for_file = $true
+                   }
+                   
+                   $file_result = $result.Replace("[WARN] ", "")
+                   $file_result = $file_result.Replace('$(Build.SourcesDirectory)/', "")
+                       
+                   $report_content += $file_result + "`n"
+                       
+                   Write-Host $result
+               }
+           }
+       }
+   }
+   
+   if ($report_content -eq ""){
+       return
+   }
+   
+   Write-Host "Result"
+   
+   Set-Content -Path $reportFileName -Value $report_content
+   Get-Content -Path $reportFileName
+   
+   $resAttachment = InvokePostFileRequest $restAddAttachment $reportFileName
+   
+   $attachmentRef = "[$($resAttachment.displayName)]($($resAttachment.url))"
+   
+   $bodyComment = $bodyCommentTemplate -replace "LINK_NAME", $resAttachment.displayName
+   $bodyComment = $bodyComment -replace "LINK_REF", $resAttachment.url
+   
+   InvokePostRequest $restAddComment $bodyComment
+  displayName: 'Check Code'
